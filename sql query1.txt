@@ -1,0 +1,47 @@
+Page1:Top 5 cities with total number of customer orders
+
+SELECT o.OrderId,c.CustomerID,c.City,count(*)
+FROM Orders o
+JOIN Customers c
+ON c.CustomerID=o.CustomerID
+GROUP BY City
+ORDER BY count(*) DESC
+LIMIT 5
+
+Page2:Top 5 cities for total customer purchases
+
+SELECT o.OrderId,c.CustomerID,c.City,sum(Quantity)ttl_quantity
+FROM Orders o
+JOIN Customers c
+ON c.CustomerID=o.CustomerID
+JOIN OrderDetails od
+on o.OrderId=od.OrderId
+GROUP BY City
+ORDER BY ttl_quantity DESC
+LIMIT 5
+
+
+Page3:Top 3 customers with the largest purchase volume
+
+SELECT c.CompanyName,sum(Quantity)ttl_quantity,c.City,c.Country
+FROM Orders o
+JOIN Customers c
+ON c.CustomerID=o.CustomerID
+JOIN OrderDetails od
+on o.OrderId=od.OrderId
+GROUP BY CompanyName
+ORDER BY ttl_quantity DESC
+LIMIT 5
+
+Page4:Customer monthly average order quantity ranking
+
+SELECT CompanyName,avg(ttl_quantity)AS avg_quantity
+FROM(SELECT STRFTIME('%Y-%m', o.OrderDate) ord_date,c.CompanyName,sum(Quantity)ttl_quantity
+FROM orders o 
+JOIN Customers c
+ON o.CustomerID=c.CustomerID
+JOIN OrderDetails od
+ON O.OrderId=od.OrderId
+GROUP BY CompanyName,ord_date) sub
+GROUP BY 1
+ORDER BY 2 DESC

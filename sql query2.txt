@@ -1,0 +1,76 @@
+1. What are the characteristics of the five most popular products?
+
+SELECT p.ProductName,SUM(od.Quantity) total_sales, c.CategoryName, s.Country
+FROM Products p 
+JOIN OrderDetails od 
+ON od.ProductID=p.ProductID 
+JOIN Orders o 
+ON o.OrderId=od.OrderId 
+JOIN Categories c 
+ON c.CategoryID=p.CategoryID 
+JOIN Suppliers s
+On p.SupplierID = s.SupplierID
+GROUP BY 1 
+ORDER BY 2 DESC 
+LIMIT 5;
+
+2. Which companies are selling most of my company's products？
+
+SELECT  t1.SupplierID, t1.CompanyName, t1.Country, round(t1.total_sales * 100.00 /t2.total, 3) || '%'  percent
+FROM 
+(SELECT p.SupplierID, s.CompanyName, SUM(od.Quantity) total_sales, s.Country
+FROM Products p
+JOIN Suppliers s
+ON p.SupplierID = s.SupplierID
+JOIN OrderDetails od 
+ON od.ProductID=p.ProductID 
+JOIN Orders o 
+ON o.OrderId=od.OrderId 
+GROUP BY 1
+ORDER BY 3 DESC ) t1,
+(SELECT SUM(total_sales) total
+FROM 
+(SELECT p.SupplierID, s.CompanyName, SUM(od.Quantity) total_sales
+FROM Products p
+JOIN Suppliers s
+ON p.SupplierID = s.SupplierID
+JOIN OrderDetails od 
+ON od.ProductID=p.ProductID 
+JOIN Orders o 
+ON o.OrderId=od.OrderId 
+GROUP BY 1
+ORDER BY 3 DESC )) t2;
+
+
+3. What is the category with the largest number and the smallest number of products?
+
+SELECT CategoryName, count(*) num_products FROM Products p
+JOIN Categories c
+ON p.CategoryID = c.CategoryID
+GROUP BY CategoryName
+ORDER BY num_products
+
+4. Which categories have more sales than the average value?
+
+SELECT CategoryName, COUNT(*) total_sales FROM Products p
+JOIN Categories c
+ON p.CategoryID = c.CategoryID
+JOIN OrderDetails o
+On o.ProductID = p.ProductID
+GROUP BY CategoryName
+
+SELECT CategoryName
+FROM(SELECT CategoryName, COUNT(*) total_sales FROM Products p
+JOIN Categories c
+ON p.CategoryID = c.CategoryID
+JOIN OrderDetails o
+On o.ProductID = p.ProductID
+GROUP BY CategoryName 
+HAVING total_sales > (SELECT AVG(total_sales)
+FROM(SELECT CategoryName, COUNT(*) total_sales FROM Products p
+JOIN Categories c
+ON p.CategoryID = c.CategoryID
+JOIN OrderDetails o
+On o.ProductID = p.ProductID
+GROUP BY CategoryName))
+
